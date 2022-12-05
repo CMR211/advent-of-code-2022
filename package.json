@@ -2,7 +2,9 @@
   "name": "advent-of-code-2022",
   "version": "1.0.0",
   "description": "solutions for advent of code 2022",
-  "scripts": {},
+  "scripts": {
+    "day-1": "ts-node --esm src/day-1/script.ts"
+  },
   "author": "Bartosz Surma",
   "dependencies": {
     "@types/node": "^18.11.10",
