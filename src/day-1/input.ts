@@ -1,4 +1,4 @@
-export const input = `
+export const raw = `
 8462
 6981
 3714

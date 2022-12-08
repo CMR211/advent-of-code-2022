@@ -1,4 +1,4 @@
-import { input } from "./input"
+import { raw } from "./input"
 
 function parseInput(inp: string): number[][] {
     const intermediate = inp.replace(/(\d+)/g, "$1,").replace(/\n\n/g, "x").replace(/\n/g, "").replace(/,x/g, "], [")
@@ -13,10 +13,9 @@ function findBiggest(elves: number[]) {
     return JSON.parse(JSON.stringify(elves)).sort((a: number, b: number) => b - a)[0]
 }
 
-const part1answer = findBiggest(countCalories(parseInput(input)))
+const part1answer = findBiggest(countCalories(parseInput(raw)))
 console.log(part1answer)
-
-// 67633 in position 6
+// 67633
 
 function find3Biggest(elves: number[]) {
     const sorted: number[] = JSON.parse(JSON.stringify(elves)).sort((a: number, b: number) => b - a)
@@ -24,6 +23,6 @@ function find3Biggest(elves: number[]) {
     return biggest3.reduce((a, b) => a + b, 0)
 }
 
-const part2answer = find3Biggest(countCalories(parseInput(input)))
+const part2answer = find3Biggest(countCalories(parseInput(raw)))
 console.log(part2answer)
 // 199628
