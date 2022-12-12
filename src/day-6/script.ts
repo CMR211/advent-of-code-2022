@@ -28,4 +28,5 @@ console.log(solution.findBuffer)
 // 1912
 
 console.log(solution.findMessage)
+// 2122
 
