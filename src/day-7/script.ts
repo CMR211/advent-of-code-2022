@@ -1,66 +1,92 @@
 import { raw } from "./raw"
 
-class Disc {
-    tree = {
-        type: "dir",
-        children: {},
+const nodes: (File | Folder)[] = []
+
+class Node {
+    path = ""
+    parentPath = ""
+    name = ""
+    constructor(_path: string) {
+        this.path = _path
+        this.parentPath = _path.split("/").slice(0, -1).join("/")
+        this.name = _path.split("/").slice(-1)[0]
     }
-    currentDirectory = ""
-    get commands() {
-        return raw.split("$").map((row) => row.split("\n").slice(0, -1))
+    get parent() {
+        if (nodes.length < 1) return null
+        else return nodes.filter((node) => node.path === this.parentPath)
     }
-    terminal(commandGroup: string[]) {
+}
+
+class File extends Node {
+    size = 0
+    constructor(_path: string, _size: string) {
+        super(_path)
+        this.size = parseInt(_size)
+    }
+}
+
+class Folder extends Node {
+    constructor(_path: string) {
+        super(_path)
+    }
+    get children() {
+        return nodes.filter((node) => node.parentPath === this.path)
+    }
+    get childrenSize() {
+        let totalSize = 0
+        this.children.forEach((child) => {
+            if (child instanceof File) totalSize += child.size
+            if (child instanceof Folder) totalSize += child.childrenSize
+        })
+        return totalSize
+    }
+}
+
+class Solution {
+    currentDirectory = "home"
+    get input() {
+        return raw.split("$").map((command) => command.split("\n").slice(0, -1))
+    }
+    parseCommand(commandGroup: string[]) {
+        console.log(commandGroup)
         const command = commandGroup[0]
-        if (command.slice(1, 3) === "cd") this.changeDirectory(command)
-        if (command.slice(1, 3) === "ls") this.listFiles(commandGroup)
+        if (command === undefined) return
+        if (command.match("cd")) this.changeDirectory(command)
+        else if (command.match("ls")) this.listFiles(commandGroup)
     }
     changeDirectory(command: string) {
-        const path = command.slice(4)
-        if (path === "..") this.currentDirectory = this.currentDirectory.split("/").slice(0, -1).join("/")
-        else if (path === "/") this.currentDirectory = "/"
-        else this.currentDirectory += path + "/"
-        console.log("currentDirectory :", this.currentDirectory)
+        if (command === " cd /") return
+        const location = command.slice(4)
+        if (location === "..") {
+            this.currentDirectory = this.currentDirectory.split("/").slice(0, -1).join("/")
+            return
+        }
+        this.currentDirectory += "/" + location
     }
     listFiles(commandGroup: string[]) {
         const files = commandGroup.slice(1)
-        files.forEach((string) => {
-            const [size, name] = string.split(" ")
-            if (size === "dir") {
-                const folder = {
-                    type: "dir",
-                    children: {},
-                }
-                setProperty(this.tree, this.currentDirectory + "/" + name, folder)
-            } else {
-                const file = {
-                    type: "file",
-                    size,
-                }
-                setProperty(this.tree, this.currentDirectory + "/" + name, file)
-            }
+        files.forEach((ls) => {
+            const [size, name] = ls.split(" ")
+            if (size === "dir") nodes.push(new Folder(this.currentDirectory + "/" + name))
+            else nodes.push(new File(this.currentDirectory + "/" + name, size))
         })
-        console.log(this.tree)
+    }
+    parseInput() {
+        this.input.forEach((commandGroup) => this.parseCommand(commandGroup))
     }
 }
 
-function accessProperty(object: any, path: string) {
-    const pathArray: string[] = path.split("/")
-    while (pathArray.length) {
-        // @ts-ignore
-        object = object[pathArray.shift()]
-    }
-    return object
-}
-
-function setProperty(object: any, path: string, property: any) {
-    const pathArray: string[] = path.split("/")
-    while (pathArray.length) {
-        const currPath = pathArray.shift()
-        if (currPath === "" || currPath === undefined) continue
-        object = object[currPath]
-    }
-    return (object[pathArray[0]] = property)
-}
-
-const disc = new Disc()
-disc.listFiles([" ls", "dir abc", "52 cdd"])
+const solution = new Solution()
+solution.parseInput()
+console.log(
+    nodes.filter((node) => {
+        if (node instanceof Folder) {
+            if (node.childrenSize >= 100000) return true
+            else return false
+        }
+        else return false
+    }).reduce((acc,node:Folder) => {
+        acc = acc + node.childrenSize
+        return acc
+    },0)
+)
