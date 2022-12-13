@@ -44,11 +44,12 @@ class Folder extends Node {
 
 class Solution {
     currentDirectory = "home"
+    spaceRequired = 30_000_000
+    spaceMax = 70_000_000
     get input() {
         return raw.split("$").map((command) => command.split("\n").slice(0, -1))
     }
     parseCommand(commandGroup: string[]) {
-        console.log(commandGroup)
         const command = commandGroup[0]
         if (command === undefined) return
         if (command.match("cd")) this.changeDirectory(command)
@@ -72,21 +73,67 @@ class Solution {
         })
     }
     parseInput() {
+        nodes.push(new Folder("home"))
         this.input.forEach((commandGroup) => this.parseCommand(commandGroup))
+    }
+    get listFolders(): [string, number][] {
+        return (
+            nodes
+                .filter((node) => isFolder(node))
+                // @ts-expect-error
+                .sort((a, b) => a.childrenSize - b.childrenSize)
+                // @ts-expect-error
+                .map((node) => [node.path, node.childrenSize])
+        )
+    }
+    get totalSize() {
+        const len = this.listFolders.length
+        return this.listFolders[len - 1][1]
+    }
+    get remainingSize() {
+        return this.spaceMax - this.totalSize
+    }
+    get sizeNeededToUpdate() {
+        return this.spaceRequired - this.remainingSize
+    }
+    get part1solution() {
+        const sizes = nodes
+            .filter((node) => isFolder(node))
+            // @ts-expect-error
+            .filter((node) => isSmall(node))
+            // @ts-expect-error
+            .map((node) => [node.path, node.childrenSize])
+        return sizes.reduce((acc, curr) => acc + curr[1], 0)
+    }
+    get part2solution() {
+        return this.listFolders.find((folder) => folder[1] > this.sizeNeededToUpdate)
     }
 }
 
 const solution = new Solution()
 solution.parseInput()
+
+function isFolder(node: Node) {
+    return node instanceof Folder
+}
+function isSmall(node: Folder) {
+    return node.childrenSize <= 100_000
+}
+
+// console.log(solution.part1solution)
+// 1449447
+
 console.log(
-    nodes.filter((node) => {
-        if (node instanceof Folder) {
-            if (node.childrenSize >= 100000) return true
-            else return false
-        }
-        else return false
-    }).reduce((acc,node:Folder) => {
-        acc = acc + node.childrenSize
-        return acc
-    },0)
+    "- total size:",
+    solution.totalSize,
+    "\n- remaining size:",
+    solution.remainingSize,
+    "\n- size needed for update:",
+    solution.sizeNeededToUpdate,
+    "\n- folder and its size:",
+    solution.part2solution
 )
+// - total size: 48044502
+// - remaining size: 21955498
+// - size needed for update: 8044502
+// - folder and its size: [ 'home/jbt/bbm/tvqh/vjdjl', 8679207 ]
