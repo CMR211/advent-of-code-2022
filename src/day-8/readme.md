@@ -34,7 +34,7 @@ With 16 trees visible on the edge and another 5 visible in the interior, a total
 
 **Your puzzle answer was 1816.**
 
-** --- Part Two ---
+## --- Part Two ---
 
 Content with the amount of tree cover available, the Elves just need to know the best spot to build their tree house: they would like to be able to see a lot of trees.
 
